@@ -4,111 +4,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Unicorn İzometrik Dünya</title>
+    <title>Gerçekçi Unicorn Villası</title>
     
-    <!-- Modern Font ve Tailwind -->
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Profesyonel 3D ve Animasyon Motorları -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
 
     <style>
         body, html { 
             margin: 0; padding: 0; width: 100%; height: 100%; 
-            overflow: hidden; background-color: #A7F3D0; /* Pastel Yeşil */
-            font-family: 'Quicksand', sans-serif;
+            overflow: hidden; background-color: #000;
+            font-family: 'Nunito', sans-serif;
             touch-action: none; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        #game-canvas { display: block; width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
+        #game-canvas { display: block; width: 100%; height: 100%; position: absolute; z-index: 1; }
 
-        /* Yükleme Ekranı */
-        #loader {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #FBCFE8; z-index: 999; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; transition: opacity 0.5s ease;
-        }
-        .spinner {
-            width: 50px; height: 50px; border: 6px solid #f9a8d4;
-            border-top-color: #ec4899; border-radius: 50%; animation: spin 1s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* Profesyonel Oyun UI */
+        /* Yüksek Kalite Arayüz */
         #ui-layer {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: 10;
             padding: max(env(safe-area-inset-top), 20px) 20px;
             display: flex; flex-direction: column; justify-content: space-between;
         }
-
         .ui-element { pointer-events: auto; }
 
-        .glass-panel {
+        .premium-panel {
             background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-radius: 20px; padding: 15px; border: 2px solid white;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+            border-radius: 24px; padding: 15px 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1), inset 0 2px 0 rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.5);
         }
 
-        .stat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .stat-icon { font-size: 18px; width: 24px; text-align: center; }
-        .stat-bar-bg { flex-grow: 1; background: #F3F4F6; height: 12px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 1px 3px rgba(0,0,0,0.1); }
-        .stat-fill { height: 100%; border-radius: 6px; transition: width 0.3s; }
+        .stat-group { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .stat-icon { font-size: 20px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+        .stat-track { flex-grow: 1; height: 14px; background: #E5E7EB; border-radius: 8px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-fill { height: 100%; border-radius: 8px; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
 
         #action-btn {
-            position: absolute; bottom: 40px; right: 20px;
-            background: #10B981; color: white; width: 80px; height: 80px;
+            position: absolute; bottom: 50px; right: 30px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: white; width: 90px; height: 90px;
             border-radius: 50%; font-weight: 900; font-size: 16px;
             display: none; justify-content: center; align-items: center;
-            box-shadow: 0 8px 0 #047857, 0 15px 20px rgba(16, 185, 129, 0.4);
-            border: 4px solid white; cursor: pointer; transition: transform 0.1s;
+            box-shadow: 0 10px 0 #047857, 0 20px 25px rgba(16, 185, 129, 0.5);
+            border: 4px solid white; cursor: pointer; transition: all 0.1s;
         }
-        #action-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #047857, 0 5px 10px rgba(16, 185, 129, 0.4); }
+        #action-btn:active { transform: translateY(10px); box-shadow: 0 0 0 #047857, 0 10px 10px rgba(16, 185, 129, 0.5); }
+
+        /* Yükleme Ekranı */
+        #loader {
+            position: absolute; inset: 0; background: #FDF2F8; z-index: 999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease;
+        }
+        .loading-bar { width: 200px; height: 8px; background: #FCE7F3; border-radius: 4px; overflow: hidden; margin-top: 20px; }
+        .loading-fill { width: 0%; height: 100%; background: #EC4899; transition: width 0.5s; }
+
+        /* Gece Modu */
+        #night-filter {
+            position: absolute; inset: 0; background: #0B0F19; opacity: 0;
+            pointer-events: none; z-index: 5; transition: opacity 2s ease; mix-blend-mode: hard-light;
+        }
 
         #toast {
             position: absolute; top: 120px; left: 50%; transform: translate(-50%, -20px);
-            background: #EC4899; color: white; padding: 8px 24px; border-radius: 30px;
-            font-weight: 800; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; border: 2px solid white; box-shadow: 0 5px 15px rgba(236, 72, 153, 0.3);
-        }
-
-        #night-filter {
-            position: absolute; inset: 0; background: #0F172A; opacity: 0;
-            pointer-events: none; z-index: 5; transition: opacity 1.5s ease; mix-blend-mode: hard-light;
+            background: rgba(236, 72, 153, 0.95); backdrop-filter: blur(5px);
+            color: white; padding: 12px 30px; border-radius: 30px;
+            font-weight: 800; font-size: 15px; opacity: 0; transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            pointer-events: none; border: 2px solid rgba(255,255,255,0.5); box-shadow: 0 10px 25px rgba(236, 72, 153, 0.4);
         }
     </style>
 </head>
 <body>
 
-    <!-- Yükleme Ekranı -->
     <div id="loader">
-        <div class="spinner mb-4"></div>
-        <h1 class="text-2xl font-black text-pink-600">Dünya Oluşturuluyor...</h1>
+        <h1 class="text-4xl font-black text-pink-600 tracking-tight drop-shadow-sm">Unicorn Villa</h1>
+        <p class="text-pink-400 font-bold mt-2">Gerçekçi 3D Modeller Yükleniyor...</p>
+        <div class="loading-bar"><div class="loading-fill" id="load-fill"></div></div>
     </div>
 
     <div id="night-filter"></div>
-
-    <!-- 3D Canvas -->
     <canvas id="game-canvas"></canvas>
 
-    <!-- Arayüz -->
     <div id="ui-layer">
         <div class="flex justify-between items-start">
-            
-            <!-- Durum Göstergeleri -->
-            <div class="glass-panel w-48 md:w-60 ui-element">
-                <div class="text-xs font-black text-pink-500 uppercase tracking-widest mb-3">Unicorn Durumu</div>
-                <div class="stat-row"><div class="stat-icon">🍓</div><div class="stat-bar-bg"><div id="bar-tokluk" class="stat-fill bg-emerald-400" style="width: 80%;"></div></div></div>
-                <div class="stat-row"><div class="stat-icon">⚡</div><div class="stat-bar-bg"><div id="bar-enerji" class="stat-fill bg-amber-400" style="width: 70%;"></div></div></div>
-                <div class="stat-row"><div class="stat-icon">🛁</div><div class="stat-bar-bg"><div id="bar-temizlik" class="stat-fill bg-cyan-400" style="width: 90%;"></div></div></div>
-                <div class="stat-row"><div class="stat-icon">🎈</div><div class="stat-bar-bg"><div id="bar-eglence" class="stat-fill bg-purple-400" style="width: 80%;"></div></div></div>
+            <div class="premium-panel w-56 md:w-72 ui-element">
+                <div class="text-sm font-black text-pink-500 mb-4 uppercase tracking-wider flex items-center gap-2">🦄 Karakter Durumu</div>
+                <div class="stat-group"><div class="stat-icon">🍓</div><div class="stat-track"><div id="bar-tokluk" class="stat-fill bg-gradient-to-r from-green-400 to-emerald-500" style="width: 80%;"></div></div></div>
+                <div class="stat-group"><div class="stat-icon">⚡</div><div class="stat-track"><div id="bar-enerji" class="stat-fill bg-gradient-to-r from-yellow-300 to-amber-400" style="width: 70%;"></div></div></div>
+                <div class="stat-group"><div class="stat-icon">🛁</div><div class="stat-track"><div id="bar-temizlik" class="stat-fill bg-gradient-to-r from-cyan-300 to-blue-400" style="width: 90%;"></div></div></div>
+                <div class="stat-group"><div class="stat-icon">🎈</div><div class="stat-track"><div id="bar-eglence" class="stat-fill bg-gradient-to-r from-purple-400 to-pink-400" style="width: 80%;"></div></div></div>
             </div>
 
-            <!-- Lolipop Skoru -->
-            <div class="glass-panel flex items-center gap-2 text-2xl font-black text-pink-500 ui-element px-5">
-                <span id="score">0</span> <span class="text-3xl">🍭</span>
+            <div class="premium-panel flex items-center gap-3 ui-element px-6 py-4">
+                <span id="score" class="text-3xl font-black text-pink-500">0</span>
+                <span class="text-3xl drop-shadow-md">🍭</span>
             </div>
         </div>
 
@@ -118,379 +110,423 @@
     <div id="toast">Harika!</div>
 
     <script>
-        // --- 1. OYUN DEĞİŞKENLERİ VE SİSTEM ---
+        // --- 1. SİSTEM DEĞİŞKENLERİ ---
         let stats = { tokluk: 80, enerji: 70, temizlik: 90, eglence: 80 };
-        let score = 0;
-        let isSleeping = false;
-        let activeBlock = null;
-        let isMoving = false;
-        let toastTimeout;
+        let score = 0; let isSleeping = false; let activeInteractable = null;
+        let isMoving = false; let toastTimeout;
 
-        // --- 2. THREE.JS İZOMETRİK KURULUM ---
+        // --- 2. GERÇEKÇİ KANVAS TEXTURE (DOKU) ÜRETİCİLERİ ---
+        // Oyunun gerçekçi görünmesi için kodla ahşap parke ve fayans dokuları oluşturuyoruz
+        function createWoodTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#D2A679'; ctx.fillRect(0,0,512,512); // Açık meşe
+            ctx.fillStyle = '#B38B5D';
+            for(let i=0; i<512; i+=32) { 
+                ctx.fillRect(0, i, 512, 2); // Parke çizgileri
+                if(Math.random() > 0.5) ctx.fillRect(Math.random()*512, i, 2, 32); // Dik çizgiler
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(4, 4);
+            return tex;
+        }
+
+        function createTileTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,256,256);
+            ctx.strokeStyle = '#E5E7EB'; ctx.lineWidth = 4;
+            ctx.strokeRect(0,0,256,256);
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(6, 6);
+            return tex;
+        }
+
+        // --- 3. THREE.JS GELİŞMİŞ KURULUM ---
         const canvas = document.getElementById('game-canvas');
-        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+        // Antialias ve Fiziksel ışıklandırma aktif
+        const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Yumuşak gölgeler
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping; // Sinematik renkler
 
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xA7F3D0); // Pastel Yeşil Arkaplan
+        scene.background = new THREE.Color(0xDBEAFE); // Yumuşak mavi gökyüzü
+        scene.fog = new THREE.Fog(0xDBEAFE, 20, 60);
 
-        // İzometrik (Ortografik) Kamera - Profesyonel oyun hissi veren kamera türü
-        const aspect = window.innerWidth / window.innerHeight;
-        const d = 10; // Kamera yakınlaştırma derecesi
-        const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
-        
-        // İzometrik Açı (Minecraft Dungeons, Crossy Road tarzı)
-        camera.position.set(20, 20, 20); 
-        camera.lookAt(scene.position);
+        // Perspektif Kamera (Daha gerçekçi derinlik için)
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100);
+        camera.position.set(15, 18, 25);
 
-        // Işıklandırma (Yumuşak ve Mobil Uyumlu)
-        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-        scene.add(ambientLight);
+        // Gerçekçi Işıklandırma
+        const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
+        hemiLight.position.set(0, 20, 0);
+        scene.add(hemiLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+        const dirLight = new THREE.DirectionalLight(0xffeedd, 1.2);
         dirLight.position.set(10, 20, 10);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.near = 0.5;
+        dirLight.shadow.camera.far = 50;
         dirLight.shadow.camera.left = -15; dirLight.shadow.camera.right = 15;
         dirLight.shadow.camera.top = 15; dirLight.shadow.camera.bottom = -15;
+        dirLight.shadow.bias = -0.001;
         scene.add(dirLight);
 
-        // --- 3. DÜNYA (MINECRAFT BLOK MANTIĞI) ---
-        const blocks = [];
-        const gridSize = 10;
-        const blockSize = 2;
+        // --- 4. MATERYALLER (MeshStandardMaterial = Fiziksel Gerçeklik) ---
+        const woodTex = createWoodTexture();
+        const tileTex = createTileTexture();
 
-        // Materyaller (Avatar World renk paleti - Pastel ve Mat)
-        const matGround1 = new THREE.MeshLambertMaterial({ color: 0x6EE7B7 }); // Çimen 1
-        const matGround2 = new THREE.MeshLambertMaterial({ color: 0x34D399 }); // Çimen 2
-        const matWood = new THREE.MeshLambertMaterial({ color: 0xFDBA74 });    // Ahşap
-        const matBed = new THREE.MeshLambertMaterial({ color: 0x93C5FD });     // Yatak
-        const matWater = new THREE.MeshLambertMaterial({ color: 0x7DD3FC });   // Su
-        const matPink = new THREE.MeshLambertMaterial({ color: 0xF9A8D4 });    // Pembe Duvar
+        const matFloorWood = new THREE.MeshStandardMaterial({ map: woodTex, roughness: 0.8 });
+        const matFloorTile = new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.2, metalness: 0.1 });
+        const matWall = new THREE.MeshStandardMaterial({ color: 0xFFF0F5, roughness: 1 });
+        const matCeramic = new THREE.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 0.1, metalness: 0.2 }); // Parlak küvet
+        const matWater = new THREE.MeshPhysicalMaterial({ color: 0x38BDF8, transmission: 0.6, opacity: 0.8, transparent: true, roughness: 0.1 });
+        const matFabric = new THREE.MeshStandardMaterial({ color: 0xBAE6FD, roughness: 1 });
+        const matWoodSolid = new THREE.MeshStandardMaterial({ color: 0x8B5A2B, roughness: 0.9 });
 
-        // Zemin Oluşturma (Dama Tahtası Blokları)
-        const blockGeo = new THREE.BoxGeometry(blockSize, blockSize, blockSize);
-        const groundGroup = new THREE.Group();
+        // --- 5. ODA TASARIMI ---
+        const roomGroup = new THREE.Group();
+        scene.add(roomGroup);
 
-        for(let x = -gridSize/2; x < gridSize/2; x++) {
-            for(let z = -gridSize/2; z < gridSize/2; z++) {
-                // Sadece belli alanları zemin yap
-                const isEven = (Math.abs(x) + Math.abs(z)) % 2 === 0;
-                const mesh = new THREE.Mesh(blockGeo, isEven ? matGround1 : matGround2);
-                mesh.position.set(x * blockSize, -blockSize/2, z * blockSize);
-                mesh.receiveShadow = true;
-                
-                // Blok verisi (Raycaster için)
-                mesh.userData = { gridX: x * blockSize, gridZ: z * blockSize, type: 'ground' };
-                groundGroup.add(mesh);
-                blocks.push(mesh);
-            }
-        }
-        scene.add(groundGroup);
+        // Ahşap Zemin (Oda 1)
+        const floorGeo = new THREE.PlaneGeometry(20, 20);
+        const floorWood = new THREE.Mesh(floorGeo, matFloorWood);
+        floorWood.rotation.x = -Math.PI / 2; floorWood.position.set(-5, 0, 5);
+        floorWood.receiveShadow = true;
+        roomGroup.add(floorWood);
 
-        // Çevre Duvarları
-        function addWall(x, z, w, d) {
-            const wall = new THREE.Mesh(new THREE.BoxGeometry(w, blockSize*2, d), matPink);
-            wall.position.set(x, blockSize/2, z);
-            wall.castShadow = true; wall.receiveShadow = true;
-            scene.add(wall);
-        }
-        addWall(0, -gridSize*blockSize/2 - 1, gridSize*blockSize, 2); // Arka
-        addWall(-gridSize*blockSize/2 - 1, 0, 2, gridSize*blockSize); // Sol
+        // Fayans Zemin (Banyo - Oda 2)
+        const floorTile = new THREE.Mesh(new THREE.PlaneGeometry(10, 20), matFloorTile);
+        floorTile.rotation.x = -Math.PI / 2; floorTile.position.set(10, 0, 5);
+        floorTile.receiveShadow = true;
+        roomGroup.add(floorTile);
 
-        // Eşyalar (Özel etkileşimli blok kümeleri)
+        // Duvarlar
+        const wallGeoLong = new THREE.BoxGeometry(30, 8, 1);
+        const wallBack = new THREE.Mesh(wallGeoLong, matWall);
+        wallBack.position.set(0, 4, -5.5); wallBack.receiveShadow = true; wallBack.castShadow = true;
+        
+        const wallGeoShort = new THREE.BoxGeometry(1, 8, 20);
+        const wallLeft = new THREE.Mesh(wallGeoShort, matWall);
+        wallLeft.position.set(-15.5, 4, 4.5); wallLeft.receiveShadow = true; wallLeft.castShadow = true;
+        roomGroup.add(wallBack, wallLeft);
+
+        // --- 6. GERÇEKÇİ EŞYALAR ---
         const interactables = [];
+        const floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0); // Raycast için görünmez zemin
 
-        function createFurniture(x, z, geo, mat, label, actionData) {
-            const mesh = new THREE.Mesh(geo, mat);
-            mesh.position.set(x, blockSize/2, z);
-            mesh.castShadow = true; mesh.receiveShadow = true;
-            
-            // Etkileşim tespiti için görünmez bir zemin bloğu ekle
-            const trigger = new THREE.Mesh(blockGeo, new THREE.MeshBasicMaterial({visible:false}));
-            trigger.position.set(x, -blockSize/2, z);
-            trigger.userData = { gridX: x, gridZ: z, type: 'interactable', action: actionData, label: label };
-            
-            scene.add(mesh); scene.add(trigger);
-            blocks.push(trigger);
-            interactables.push(trigger);
+        function addInteractionMarker(x, z, label, actionData) {
+            interactables.push({ x, z, label, action: actionData });
         }
 
-        // Yatak (Uyuma)
-        createFurniture(-6, -6, new THREE.BoxGeometry(4, 2, 6), matBed, "UYU", { type: 'uyut', msg: 'Zzz...', loli: 8 });
-        
-        // Masa (Yemek)
-        const tableGeo = new THREE.BoxGeometry(4, 3, 4);
-        createFurniture(6, -6, tableGeo, matWood, "YEMEK", { type: 'besle', msg: 'Nefis! +5🍭', loli: 5 });
-        
-        // Küvet (Yıkanma)
-        createFurniture(6, 6, new THREE.BoxGeometry(6, 2, 4), matWater, "YIKAN", { type: 'yika', msg: 'Mis gibi! +5🍭', loli: 5 });
+        // Karyola ve Yatak (Yumuşak Hatlar)
+        const bedGroup = new THREE.Group();
+        const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(5, 1, 7), matWoodSolid);
+        bedFrame.position.y = 0.5; bedFrame.castShadow = true;
+        const mattress = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.8, 6.6), matFabric);
+        mattress.position.y = 1.4; mattress.castShadow = true;
+        const pillow = new THREE.Mesh(new THREE.CapsuleGeometry(0.6, 2, 16, 16), new THREE.MeshStandardMaterial({color: 0xffffff}));
+        pillow.rotation.z = Math.PI/2; pillow.position.set(0, 2, -2); pillow.castShadow = true;
+        bedGroup.add(bedFrame, mattress, pillow);
+        bedGroup.position.set(-10, 0, 0);
+        roomGroup.add(bedGroup);
+        addInteractionMarker(-10, 0, "UYU", { type: 'uyut', msg: "Mışıl mışıl...", loli: 8 });
 
-        // --- 4. KARAKTER (CHIBI UNICORN - AVATAR WORLD TARZI) ---
+        // Yemek Masası
+        const tableGroup = new THREE.Group();
+        const tableTop = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 0.2, 32), matWoodSolid);
+        tableTop.position.y = 2.5; tableTop.castShadow = true;
+        const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.5, 2.5, 16), matWoodSolid);
+        tableLeg.position.y = 1.25; tableLeg.castShadow = true;
+        // Tabak ve Çilek
+        const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.8, 0.1, 32), matCeramic);
+        plate.position.y = 2.65;
+        const berry = new THREE.Mesh(new THREE.SphereGeometry(0.3, 16, 16), new THREE.MeshStandardMaterial({color: 0xE11D48}));
+        berry.position.y = 2.9;
+        tableGroup.add(tableTop, tableLeg, plate, berry);
+        tableGroup.position.set(-2, 0, 8);
+        roomGroup.add(tableGroup);
+        addInteractionMarker(-2, 8, "YEMEK YE", { type: 'besle', msg: "Nefis Çilek! +5🍭", loli: 5 });
+
+        // Küvet (Yuvarlak ve Seramik)
+        const tubGroup = new THREE.Group();
+        const tubOuter = new THREE.Mesh(new THREE.CapsuleGeometry(1.5, 3, 16, 32), matCeramic);
+        tubOuter.rotation.z = Math.PI/2; tubOuter.position.y = 1; tubOuter.castShadow = true;
+        const tubWater = new THREE.Mesh(new THREE.PlaneGeometry(5, 2.5), matWater);
+        tubWater.rotation.x = -Math.PI/2; tubWater.position.y = 1.3;
+        tubGroup.add(tubOuter, tubWater);
+        tubGroup.position.set(10, 0, -2);
+        roomGroup.add(tubGroup);
+        addInteractionMarker(10, -2, "YIKAN", { type: 'yika', msg: "Tertemiz! +5🍭", loli: 5 });
+
+
+        // --- 7. PÜRÜZSÜZ UNICORN MODELİ (GERÇEKÇİ/ORGANİK 3D) ---
+        // Blokları tamamen bıraktık, organik geometriler kullanıyoruz.
         const playerGroup = new THREE.Group();
+        const matUniWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
+        const matUniPink = new THREE.MeshStandardMaterial({ color: 0xF472B6, roughness: 0.8 });
+        const matGold = new THREE.MeshStandardMaterial({ color: 0xFBBF24, roughness: 0.3, metalness: 0.6 });
+
+        // Gövde (Kapsül)
+        const pBody = new THREE.Mesh(new THREE.CapsuleGeometry(0.8, 1.2, 16, 16), matUniWhite);
+        pBody.rotation.x = Math.PI/2; pBody.position.y = 1.5; pBody.castShadow = true;
+        playerGroup.add(pBody);
+
+        // Kafa (Küre)
+        const pHeadGroup = new THREE.Group();
+        pHeadGroup.position.set(0, 2.4, 1);
+        const pHead = new THREE.Mesh(new THREE.SphereGeometry(0.9, 32, 32), matUniWhite);
+        pHead.castShadow = true;
         
-        // Gövde
-        const bodyMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-        const bodyGeo = new THREE.BoxGeometry(1.5, 1.5, 2); // Kutu gibi ama şirin
-        const body = new THREE.Mesh(bodyGeo, bodyMat);
-        body.position.y = 1; body.castShadow = true;
-        playerGroup.add(body);
-
-        // Kafa (Büyük)
-        const headGeo = new THREE.BoxGeometry(2, 2, 2.2);
-        const head = new THREE.Mesh(headGeo, bodyMat);
-        head.position.set(0, 2.5, 1); head.castShadow = true;
-        playerGroup.add(head);
-
-        // Gözler ve Detaylar
-        const blackMat = new THREE.MeshLambertMaterial({ color: 0x333333 });
-        const eye1 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.1), blackMat);
-        eye1.position.set(0.6, 2.6, 2.1);
-        const eye2 = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.4, 0.1), blackMat);
-        eye2.position.set(-0.6, 2.6, 2.1);
+        // Burun
+        const pSnout = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), matUniPink);
+        pSnout.position.set(0, -0.2, 0.8);
+        
+        // Gözler
+        const pEyeGeo = new THREE.SphereGeometry(0.1, 16, 16);
+        const pEyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+        const pEyeR = new THREE.Mesh(pEyeGeo, pEyeMat); pEyeR.position.set(0.4, 0.2, 0.8);
+        const pEyeL = new THREE.Mesh(pEyeGeo, pEyeMat); pEyeL.position.set(-0.4, 0.2, 0.8);
         
         // Boynuz
-        const hornGeo = new THREE.ConeGeometry(0.3, 1.5, 4);
-        const horn = new THREE.Mesh(hornGeo, new THREE.MeshLambertMaterial({ color: 0xFBBF24 }));
-        horn.position.set(0, 3.8, 1.5); horn.rotation.x = Math.PI/8;
-        
-        // Yele
-        const mane = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2, 0.8), matPink);
-        mane.position.set(0, 2.5, -0.5);
+        const pHorn = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.8, 16), matGold);
+        pHorn.position.set(0, 0.8, 0.5); pHorn.rotation.x = Math.PI/8;
 
-        playerGroup.add(eye1, eye2, horn, mane);
+        pHeadGroup.add(pHead, pSnout, pEyeR, pEyeL, pHorn);
+        playerGroup.add(pHeadGroup);
 
-        // Başlangıç Pozisyonu
-        playerGroup.position.set(0, 0, 0);
+        // Bacaklar (Yumuşak silindirler)
+        const legs = [];
+        const legGeo = new THREE.CapsuleGeometry(0.2, 0.6, 16, 16);
+        const legPos = [[-0.4, 1, 0.6], [0.4, 1, 0.6], [-0.4, 1, -0.6], [0.4, 1, -0.6]];
+        legPos.forEach(pos => {
+            const legWrapper = new THREE.Group(); // Dönme merkezi üstte
+            legWrapper.position.set(pos[0], pos[1], pos[2]);
+            const leg = new THREE.Mesh(legGeo, matUniWhite);
+            leg.position.y = -0.5; leg.castShadow = true;
+            // Toynak
+            const hoof = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.2, 16), matUniPink);
+            hoof.position.y = -0.9;
+            legWrapper.add(leg, hoof);
+            playerGroup.add(legWrapper);
+            legs.push(legWrapper);
+        });
+
+        // Kuyruk
+        const pTail = new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.8, 16, 16), matUniPink);
+        pTail.position.set(0, 1.6, -1.2); pTail.rotation.x = -Math.PI/4;
+        playerGroup.add(pTail);
+
         scene.add(playerGroup);
 
-        // Hedef Gösterici (Kare)
-        const targetMarker = new THREE.Mesh(
-            new THREE.PlaneGeometry(1.8, 1.8),
-            new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5 })
+        // Tıklama Hedefi Göstergesi
+        const targetRing = new THREE.Mesh(
+            new THREE.RingGeometry(0.4, 0.6, 32),
+            new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, transparent: true, opacity: 0.6 })
         );
-        targetMarker.rotation.x = -Math.PI / 2;
-        targetMarker.position.y = 0.01;
-        targetMarker.visible = false;
-        scene.add(targetMarker);
+        targetRing.rotation.x = Math.PI/2;
+        targetRing.position.y = 0.05;
+        targetRing.visible = false;
+        scene.add(targetRing);
 
 
-        // --- 5. ETKİLEŞİM VE HAREKET (RAYCASTER & TWEEN) ---
+        // --- 8. KONTROLLER VE ETKİLEŞİM ---
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
+        let targetX = 0, targetZ = 0;
 
-        function onPointerDown(event) {
-            if(isSleeping || isMoving) return;
+        function onPointerDown(e) {
+            if(isSleeping || e.target !== canvas) return;
+            const cx = e.touches ? e.touches[0].clientX : e.clientX;
+            const cy = e.touches ? e.touches[0].clientY : e.clientY;
 
-            // Dokunma veya tıklama koordinatlarını al
-            const clientX = event.touches ? event.touches[0].clientX : event.clientX;
-            const clientY = event.touches ? event.touches[0].clientY : event.clientY;
-
-            // UI'a tıklandıysa yoksay
-            if(event.target !== canvas) return;
-
-            mouse.x = (clientX / window.innerWidth) * 2 - 1;
-            mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+            mouse.x = (cx / window.innerWidth) * 2 - 1;
+            mouse.y = -(cy / window.innerHeight) * 2 + 1;
 
             raycaster.setFromCamera(mouse, camera);
             
-            // Sadece bloklarla etkileşime gir
-            const intersects = raycaster.intersectObjects(blocks);
-
-            if (intersects.length > 0) {
-                const targetBlock = intersects[0].object;
-                const tx = targetBlock.userData.gridX;
-                const tz = targetBlock.userData.gridZ;
-
-                // Seçili bloğu işaretle
-                targetMarker.position.set(tx, 0.01, tz);
-                targetMarker.visible = true;
-
-                // Karakteri o bloğa döndür
-                playerGroup.lookAt(tx, playerGroup.position.y, tz);
-
-                // Tween Animasyonu ile Zıplayarak İlerle (Gerçekçi profesyonel his)
-                isMoving = true;
-                const dist = Math.hypot(tx - playerGroup.position.x, tz - playerGroup.position.z);
-                const duration = Math.max(300, dist * 100); // Mesafeye göre süre
-
-                // Yatay hareket
-                new TWEEN.Tween(playerGroup.position)
-                    .to({ x: tx, z: tz }, duration)
-                    .easing(TWEEN.Easing.Quadratic.Out)
-                    .onComplete(() => {
-                        isMoving = false;
-                        targetMarker.visible = false;
-                        checkInteractions();
-                    })
-                    .start();
-
-                // Dikey Zıplama efekti
-                const hopHeight = 1.5;
-                new TWEEN.Tween(playerGroup.position)
-                    .to({ y: hopHeight }, duration / 2)
-                    .easing(TWEEN.Easing.Quadratic.Out)
-                    .yoyo(true)
-                    .repeat(1)
-                    .start();
-            }
+            // Sadece zeminle (görünmez düzlem) kesişimi kontrol et
+            raycaster.ray.intersectPlane(floorPlane, targetRing.position);
+            
+            // Sınırlar
+            targetRing.position.x = Math.max(-14, Math.min(14, targetRing.position.x));
+            targetRing.position.z = Math.max(-4, Math.min(14, targetRing.position.z));
+            
+            targetX = targetRing.position.x;
+            targetZ = targetRing.position.z;
+            targetRing.position.y = 0.05; // Yerde kalsın
+            targetRing.visible = true;
+            isMoving = true;
         }
 
         window.addEventListener('mousedown', onPointerDown);
         window.addEventListener('touchstart', onPointerDown, {passive: false});
 
-        // Etkileşim Kontrolü
-        function checkInteractions() {
-            let found = null;
-            
-            if(!isSleeping) {
-                for(let trigger of interactables) {
-                    if(trigger.userData.gridX === playerGroup.position.x && 
-                       trigger.userData.gridZ === playerGroup.position.z) {
-                        found = trigger.userData;
-                        break;
-                    }
-                }
-            } else {
-                found = interactables[0].userData; // Uyurken yatak
-            }
-
-            const btn = document.getElementById('action-btn');
-            if(found) {
-                activeBlock = found;
-                btn.innerText = isSleeping ? "UYAN" : found.label;
-                btn.style.display = 'flex';
-            } else {
-                activeBlock = null;
-                btn.style.display = 'none';
-            }
-        }
-
-        // --- 6. OYUN MEKANİKLERİ VE UI ---
-        
         function showToast(msg) {
             const el = document.getElementById('toast');
-            el.innerText = msg;
-            el.style.opacity = '1';
-            el.style.transform = 'translate(-50%, 0)';
+            el.innerText = msg; el.style.opacity = '1'; el.style.transform = 'translate(-50%, 0)';
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => {
-                el.style.opacity = '0';
-                el.style.transform = 'translate(-50%, -20px)';
-            }, 2500);
+            toastTimeout = setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translate(-50%, -20px)'; }, 2500);
         }
 
         function updateUI() {
             const c = v => v > 60 ? "#34D399" : (v > 30 ? "#FBBF24" : "#F87171");
             ['tokluk', 'enerji', 'temizlik', 'eglence'].forEach(k => {
                 let bar = document.getElementById(`bar-${k}`);
-                bar.style.width = `${stats[k]}%`;
-                bar.style.backgroundColor = c(stats[k]);
+                bar.style.width = `${stats[k]}%`; bar.style.backgroundColor = c(stats[k]);
             });
             document.getElementById('score').innerText = score;
         }
 
         window.doAction = () => {
-            if(!activeBlock) return;
-            const act = activeBlock.action;
+            if(!activeInteractable) return;
+            const act = activeInteractable.action;
 
             if(act.type === 'uyut') {
                 isSleeping = !isSleeping;
                 const filter = document.getElementById('night-filter');
                 if(isSleeping) {
-                    filter.style.opacity = '0.85';
-                    stats.enerji = 100; score += act.loli;
-                    showToast(act.msg);
-                    
-                    // Yatağa yatır (Tween ile)
-                    new TWEEN.Tween(playerGroup.rotation)
-                        .to({ x: -Math.PI/2, z: Math.PI/2 }, 500)
-                        .start();
-                    new TWEEN.Tween(playerGroup.position)
-                        .to({ y: 1 }, 500).start();
-                        
+                    filter.style.opacity = '0.85'; stats.enerji = 100; score += act.loli; showToast(act.msg);
+                    // Yatağa yatır (Gerçekçi dönüş)
+                    playerGroup.position.set(-10, 1.2, 0);
+                    playerGroup.rotation.set(0, Math.PI/2, Math.PI/2);
                 } else {
-                    filter.style.opacity = '0';
-                    showToast("Günaydın!");
-                    // Ayağa kalk
-                    new TWEEN.Tween(playerGroup.rotation)
-                        .to({ x: 0, z: 0 }, 500).start();
-                    new TWEEN.Tween(playerGroup.position)
-                        .to({ y: 0 }, 500).start();
+                    filter.style.opacity = '0'; showToast("Günaydın!");
+                    playerGroup.rotation.set(0, 0, 0);
+                    playerGroup.position.set(-6, 0, 0);
                 }
             } else {
                 if(isSleeping) { showToast("Önce uyan!"); return; }
-
-                // Aksiyon Zıplaması
-                new TWEEN.Tween(playerGroup.position)
-                    .to({ y: 2 }, 150).yoyo(true).repeat(1).start();
-
+                
                 if(act.type === 'besle') {
                     if(stats.tokluk >= 100) { showToast("Karnı Tok."); return; }
-                    stats.tokluk = 100; stats.tuvalet = Math.max(0, stats.tuvalet - 20);
+                    stats.tokluk = 100;
                 } else if(act.type === 'yika') { stats.temizlik = 100; }
                 
-                score += act.loli;
-                showToast(act.msg);
+                score += act.loli; showToast(act.msg);
             }
             updateUI();
         };
 
-        // Otomatik Düşüş
         setInterval(() => {
             if(isSleeping) return;
-            stats.tokluk = Math.max(0, stats.tokluk - 2);
-            stats.enerji = Math.max(0, stats.enerji - 1.5);
-            stats.eglence = Math.max(0, stats.eglence - 2);
+            stats.tokluk = Math.max(0, stats.tokluk - 1.5);
+            stats.enerji = Math.max(0, stats.enerji - 1);
+            stats.eglence = Math.max(0, stats.eglence - 1.5);
             stats.temizlik = Math.max(0, stats.temizlik - 0.5);
             updateUI();
         }, 5000);
 
 
-        // --- 7. RENDER VE GÜNCELLEME DÖNGÜSÜ ---
-        
-        // Pencere boyutu değiştiğinde Kamerayı güncelle
-        window.addEventListener('resize', () => {
-            const aspect = window.innerWidth / window.innerHeight;
-            camera.left = -d * aspect;
-            camera.right = d * aspect;
-            camera.top = d;
-            camera.bottom = -d;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        });
+        // --- 9. RENDER DÖNGÜSÜ VE ANİMASYON ---
+        const clock = new THREE.Clock();
 
-        function animate(time) {
+        function animate() {
             requestAnimationFrame(animate);
-            TWEEN.update(time); // Animasyonları işlet
-            
-            // Nefes Alma Efekti (Boştayken)
-            if(!isMoving && !isSleeping) {
-                body.scale.y = 1 + Math.sin(time * 0.005) * 0.05;
-                head.position.y = 2.5 + Math.sin(time * 0.005) * 0.05;
-            } else {
-                body.scale.y = 1;
-                head.position.y = 2.5;
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            if(isMoving && !isSleeping) {
+                const dx = targetX - playerGroup.position.x;
+                const dz = targetZ - playerGroup.position.z;
+                const dist = Math.hypot(dx, dz);
+
+                if(dist > 0.1) {
+                    const speed = 6 * delta;
+                    playerGroup.position.x += (dx/dist) * speed;
+                    playerGroup.position.z += (dz/dist) * speed;
+                    
+                    // Yumuşak Dönüş
+                    const targetAngle = Math.atan2(dx, dz);
+                    let diff = targetAngle - playerGroup.rotation.y;
+                    diff = Math.atan2(Math.sin(diff), Math.cos(diff));
+                    playerGroup.rotation.y += diff * 10 * delta;
+
+                    // Yürüme Animasyonu (Bacaklar ve Gövde)
+                    const walkCycle = time * 15;
+                    legs[0].rotation.x = Math.sin(walkCycle) * 0.6;
+                    legs[3].rotation.x = Math.sin(walkCycle) * 0.6;
+                    legs[1].rotation.x = -Math.sin(walkCycle) * 0.6;
+                    legs[2].rotation.x = -Math.sin(walkCycle) * 0.6;
+                    playerGroup.position.y = Math.abs(Math.sin(walkCycle)) * 0.2;
+                    pHeadGroup.rotation.x = Math.sin(walkCycle*0.5) * 0.1;
+                } else {
+                    isMoving = false;
+                    targetRing.visible = false;
+                }
+            } else if (!isSleeping) {
+                // Nefes alma animasyonu (Dururken)
+                legs.forEach(l => l.rotation.x = 0);
+                playerGroup.position.y = 0;
+                pBody.scale.y = 1 + Math.sin(time * 3) * 0.05;
+                pHeadGroup.position.y = 2.4 + Math.sin(time * 3) * 0.05;
             }
+
+            // Etkileşim Kontrolü
+            let found = null;
+            if(!isSleeping) {
+                for(let item of interactables) {
+                    if(Math.hypot(playerGroup.position.x - item.x, playerGroup.position.z - item.z) < 4) {
+                        found = item; break;
+                    }
+                }
+            } else {
+                found = interactables[0]; // Yatak
+            }
+
+            const btn = document.getElementById('action-btn');
+            if(found) {
+                if(activeInteractable !== found || btn.style.display === 'none') {
+                    activeInteractable = found;
+                    btn.innerText = isSleeping ? "UYAN" : found.label;
+                    btn.style.display = 'flex';
+                }
+            } else {
+                activeInteractable = null;
+                btn.style.display = 'none';
+            }
+
+            // Sinematik Kamera Takibi
+            const camTargetX = playerGroup.position.x + 15;
+            const camTargetZ = playerGroup.position.z + 25;
+            camera.position.x += (camTargetX - camera.position.x) * 0.05;
+            camera.position.z += (camTargetZ - camera.position.z) * 0.05;
+            camera.lookAt(playerGroup.position.x, 2, playerGroup.position.z);
 
             renderer.render(scene, camera);
         }
 
-        // Yükleme Ekranı Kapanışı ve Başlatma
-        window.onload = () => {
-            setTimeout(() => {
-                const loader = document.getElementById('loader');
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 500);
-            }, 800);
-            
-            updateUI();
-            requestAnimationFrame(animate);
-        };
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Yükleme Simülasyonu
+        let loadProgress = 0;
+        const loadInterval = setInterval(() => {
+            loadProgress += 15;
+            document.getElementById('load-fill').style.width = `${Math.min(100, loadProgress)}%`;
+            if(loadProgress >= 100) {
+                clearInterval(loadInterval);
+                setTimeout(() => {
+                    document.getElementById('loader').style.opacity = '0';
+                    setTimeout(() => document.getElementById('loader').style.display = 'none', 800);
+                    updateUI();
+                    animate();
+                }, 500);
+            }
+        }, 100);
 
     </script>
 </body>
