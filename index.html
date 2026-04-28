@@ -4,25 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>3D Unicorn Villa Macerası</title>
+    <title>Modern Unicorn Villası</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; touch-action: none; user-select: none; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #000; }
+        /* Siyah ekranı engellemek için arkaplanı gökyüzü mavisi yaptık */
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; touch-action: none; user-select: none; font-family: 'Nunito', 'Segoe UI', sans-serif; background: linear-gradient(180deg, #6ee7b7 0%, #3b82f6 100%); }
         #game-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; }
+        
+        /* UI Katmanı */
+        #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: max(env(safe-area-inset-top), 15px) 15px 20px 15px; }
         .pointer-auto { pointer-events: auto; }
         
-        #joystick-zone { position: absolute; bottom: 30px; left: 30px; width: 130px; height: 130px; background: rgba(255,255,255,0.15); border-radius: 50%; pointer-events: auto; touch-action: none; border: 2px solid rgba(255,255,255,0.4); backdrop-filter: blur(4px); box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
-        #joystick-knob { position: absolute; top: 50%; left: 50%; width: 50px; height: 50px; background: linear-gradient(135deg, #f472b6, #db2777); border-radius: 50%; transform: translate(-50%, -50%); transition: background 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid white; }
+        /* Modern Cam Tasarımı (Glassmorphism) */
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 2px solid rgba(255, 255, 255, 0.8); border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .stat-bar { height: 10px; border-radius: 5px; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
         
-        #action-btn { position: absolute; bottom: 40px; right: 40px; width: 90px; height: 90px; background: linear-gradient(135deg, #fb7185, #e11d48); color: white; border-radius: 50%; display: none; justify-content: center; align-items: center; font-weight: 800; font-size: 16px; text-align: center; box-shadow: 0 8px 25px rgba(225, 29, 72, 0.6); pointer-events: auto; border: 4px solid white; transition: all 0.2s; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); z-index: 10;}
-        #action-btn:active { transform: scale(0.85); background: #be123c; }
+        /* Joystick */
+        #joystick-zone { position: absolute; bottom: 40px; left: 30px; width: 140px; height: 140px; background: rgba(255,255,255,0.2); border-radius: 50%; pointer-events: auto; border: 3px solid rgba(255,255,255,0.5); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; }
+        #joystick-knob { width: 60px; height: 60px; background: linear-gradient(135deg, #f472b6, #db2777); border-radius: 50%; box-shadow: 0 10px 20px rgba(219, 39, 119, 0.4); border: 3px solid white; transform: translate(0, 0); }
         
-        .stat-bar { height: 8px; border-radius: 4px; transition: width 0.4s ease-out; }
-        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        /* Animasyonlu Aksiyon Butonu */
+        #action-btn { position: absolute; bottom: 50px; right: 30px; width: 100px; height: 100px; background: linear-gradient(135deg, #fb7185, #e11d48); color: white; border-radius: 50%; display: none; justify-content: center; align-items: center; font-weight: 900; font-size: 18px; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); box-shadow: 0 10px 25px rgba(225, 29, 72, 0.5); pointer-events: auto; border: 5px solid white; animation: pulse 2s infinite; transition: transform 0.1s; }
+        #action-btn:active { transform: scale(0.9); }
         
-        #night-filter { position: absolute; top:0; left:0; width: 100%; height: 100%; background: rgba(5, 5, 20, 0.85); z-index: 1; pointer-events: none; opacity: 0; transition: opacity 2s ease; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0.7); } 70% { box-shadow: 0 0 0 20px rgba(225, 29, 72, 0); } 100% { box-shadow: 0 0 0 0 rgba(225, 29, 72, 0); } }
+        
+        #night-filter { position: absolute; top:0; left:0; width: 100%; height: 100%; background: #0f172a; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 2s ease-in-out; mix-blend-mode: multiply; }
     </style>
 </head>
 <body>
@@ -30,59 +38,55 @@
     <div id="game-container"></div>
     <div id="night-filter"></div>
 
-    <div id="ui-layer" class="p-4">
-        <!-- Üst Panel -->
+    <div id="ui-layer">
         <div class="flex justify-between items-start pointer-auto">
-            <div class="glass-panel rounded-2xl p-3 w-44 md:w-56">
-                <div class="text-sm font-extrabold text-pink-600 mb-2 flex items-center gap-1">🦄 Unicorn Durumu</div>
-                <div class="space-y-2">
-                    <div class="flex items-center text-xs font-bold text-gray-700">
-                        <span class="w-6 text-center">🍓</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div id="bar-tokluk" class="stat-bar bg-green-400" style="width: 80%"></div></div>
+            <div class="glass-panel p-4 w-48 md:w-64">
+                <div class="text-sm md:text-base font-black text-pink-500 mb-3 flex items-center gap-2">🦄 Durumlar</div>
+                <div class="space-y-2.5">
+                    <div class="flex items-center text-sm font-bold text-gray-700">
+                        <span class="w-7 text-xl">🍓</span><div class="flex-1 bg-white/50 rounded-full h-2.5"><div id="bar-tokluk" class="stat-bar bg-green-400" style="width: 80%"></div></div>
                     </div>
-                    <div class="flex items-center text-xs font-bold text-gray-700">
-                        <span class="w-6 text-center">🚽</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div id="bar-tuvalet" class="stat-bar bg-green-400" style="width: 90%"></div></div>
+                    <div class="flex items-center text-sm font-bold text-gray-700">
+                        <span class="w-7 text-xl">🚽</span><div class="flex-1 bg-white/50 rounded-full h-2.5"><div id="bar-tuvalet" class="stat-bar bg-green-400" style="width: 90%"></div></div>
                     </div>
-                    <div class="flex items-center text-xs font-bold text-gray-700">
-                        <span class="w-6 text-center">⚡</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div id="bar-enerji" class="stat-bar bg-yellow-400" style="width: 70%"></div></div>
+                    <div class="flex items-center text-sm font-bold text-gray-700">
+                        <span class="w-7 text-xl">⚡</span><div class="flex-1 bg-white/50 rounded-full h-2.5"><div id="bar-enerji" class="stat-bar bg-yellow-400" style="width: 70%"></div></div>
                     </div>
-                    <div class="flex items-center text-xs font-bold text-gray-700">
-                        <span class="w-6 text-center">🎈</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div id="bar-eglence" class="stat-bar bg-green-400" style="width: 80%"></div></div>
+                    <div class="flex items-center text-sm font-bold text-gray-700">
+                        <span class="w-7 text-xl">🎈</span><div class="flex-1 bg-white/50 rounded-full h-2.5"><div id="bar-eglence" class="stat-bar bg-green-400" style="width: 80%"></div></div>
                     </div>
-                    <div class="flex items-center text-xs font-bold text-gray-700">
-                        <span class="w-6 text-center">🛁</span><div class="flex-1 bg-gray-200 rounded-full h-2"><div id="bar-temizlik" class="stat-bar bg-green-400" style="width: 90%"></div></div>
+                    <div class="flex items-center text-sm font-bold text-gray-700">
+                        <span class="w-7 text-xl">🛁</span><div class="flex-1 bg-white/50 rounded-full h-2.5"><div id="bar-temizlik" class="stat-bar bg-green-400" style="width: 90%"></div></div>
                     </div>
                 </div>
             </div>
 
             <div class="flex flex-col items-end gap-3">
-                <div class="glass-panel text-pink-600 px-5 py-2 rounded-full font-black flex items-center gap-2 text-xl border-2 border-pink-300">
-                    <span id="lollipop-count">0</span><span class="text-2xl drop-shadow-md">🍭</span>
+                <div class="glass-panel text-pink-500 px-5 py-3 font-black flex items-center gap-2 text-2xl">
+                    <span id="lollipop-count">0</span><span class="text-3xl drop-shadow-md">🍭</span>
                 </div>
-                <div id="msg-box" class="glass-panel text-pink-600 px-4 py-2 rounded-xl font-bold text-sm opacity-0 transition-opacity duration-300 max-w-[180px] text-right">
-                    Harika villaya hoş geldin!
+                <div id="msg-box" class="glass-panel text-pink-600 px-5 py-3 font-bold text-sm md:text-base opacity-0 transition-all duration-300 transform translate-x-10 text-right max-w-[200px]">
+                    Yeni evine hoş geldin!
                 </div>
             </div>
         </div>
 
-        <!-- Üst Orta Menü -->
         <div class="absolute top-6 left-1/2 -translate-x-1/2 flex gap-3 pointer-auto">
-            <button onclick="playWithSiblings()" class="glass-panel px-4 py-2 rounded-full text-pink-600 font-bold active:scale-95 text-sm flex items-center gap-1 hover:bg-pink-50 transition-colors">
+            <button onclick="playWithSiblings()" class="glass-panel px-5 py-2.5 text-pink-600 font-extrabold active:scale-95 text-sm md:text-base flex items-center gap-2 hover:bg-white/90">
                 🎈 Oyna
             </button>
             <div class="relative">
-                <button onclick="toggleDressMenu()" class="glass-panel px-4 py-2 rounded-full text-purple-600 font-bold active:scale-95 text-sm flex items-center gap-1 hover:bg-purple-50 transition-colors">
+                <button onclick="toggleDressMenu()" class="glass-panel px-5 py-2.5 text-purple-600 font-extrabold active:scale-95 text-sm md:text-base flex items-center gap-2 hover:bg-white/90">
                     🎀 Dolap
                 </button>
-                <div id="dress-menu" class="hidden absolute top-full mt-3 left-1/2 -translate-x-1/2 glass-panel rounded-2xl p-2 flex gap-2 border-2 border-purple-200 z-50">
-                    <button onclick="equipHat('none')" class="text-2xl p-2 hover:bg-gray-100 rounded-xl transition-colors">❌</button>
-                    <button onclick="equipHat('crown')" class="text-2xl p-2 hover:bg-yellow-100 rounded-xl transition-colors">👑</button>
-                    <button onclick="equipHat('glasses')" class="text-2xl p-2 hover:bg-blue-100 rounded-xl transition-colors">🕶️</button>
-                    <button onclick="equipHat('bow')" class="text-2xl p-2 hover:bg-pink-100 rounded-xl transition-colors">🎀</button>
+                <div id="dress-menu" class="hidden absolute top-full mt-3 left-1/2 -translate-x-1/2 glass-panel p-3 flex gap-3 z-50 w-max">
+                    <button onclick="equipHat('none')" class="text-3xl p-2 hover:bg-gray-100 rounded-2xl transition-transform hover:scale-110">❌</button>
+                    <button onclick="equipHat('crown')" class="text-3xl p-2 hover:bg-yellow-50 rounded-2xl transition-transform hover:scale-110">👑</button>
+                    <button onclick="equipHat('glasses')" class="text-3xl p-2 hover:bg-blue-50 rounded-2xl transition-transform hover:scale-110">🕶️</button>
                 </div>
             </div>
         </div>
 
-        <!-- Alt Panel -->
         <div class="w-full relative h-48 pointer-events-none">
             <div id="joystick-zone" class="pointer-auto"><div id="joystick-knob"></div></div>
             <button id="action-btn" class="pointer-auto" onclick="performInteraction()">Eylem</button>
@@ -90,246 +94,202 @@
     </div>
 
     <script>
+        // --- OYUN DEĞİŞKENLERİ ---
         let lollipops = 0;
         let isSleeping = false;
         let stats = { tokluk: 80, tuvalet: 90, enerji: 70, eglence: 80, temizlik: 90 };
         let activeInteractable = null;
         let showMsgTimeout;
 
+        // --- THREE.JS SAHNE KURULUMU ---
         const container = document.getElementById('game-container');
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xdbeafe);
-        scene.fog = new THREE.Fog(0xdbeafe, 30, 80);
+        scene.background = new THREE.Color(0xa7f3d0); // Tatlı nane yeşili
+        scene.fog = new THREE.Fog(0xa7f3d0, 25, 60);
         
-        const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
         renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Mobil performans için
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
-        // Fix for modern Three.js deprecation warnings
-        renderer.useLegacyLights = false; 
-
+        renderer.outputEncoding = THREE.sRGBEncoding;
         container.appendChild(renderer.domElement);
 
-        const hemiLight = new THREE.HemisphereLight(0xffffff, 0xffffff, 0.6);
-        hemiLight.color.setHSL(0.6, 1, 0.6);
-        hemiLight.groundColor.setHSL(0.095, 1, 0.75);
-        hemiLight.position.set(0, 50, 0);
-        scene.add(hemiLight);
+        // --- MODERN IŞIKLANDIRMA ---
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+        scene.add(ambientLight);
 
-        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2); // Artırıldı
-        dirLight.position.set(20, 30, 20);
+        const dirLight = new THREE.DirectionalLight(0xffeedd, 0.8);
+        dirLight.position.set(15, 25, 15);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 2048;
-        dirLight.shadow.mapSize.height = 2048;
-        dirLight.shadow.camera.near = 0.5;
-        dirLight.shadow.camera.far = 100;
-        dirLight.shadow.camera.left = -30;
-        dirLight.shadow.camera.right = 30;
-        dirLight.shadow.camera.top = 30;
-        dirLight.shadow.camera.bottom = -30;
+        dirLight.shadow.mapSize.width = 1024;
+        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.camera.near = 1;
+        dirLight.shadow.camera.far = 50;
+        dirLight.shadow.camera.left = -20;
+        dirLight.shadow.camera.right = 20;
+        dirLight.shadow.camera.top = 20;
+        dirLight.shadow.camera.bottom = -20;
         scene.add(dirLight);
 
-        const nightLight = new THREE.PointLight(0xfde047, 0, 40);
-        nightLight.position.set(-15, 6, -15);
-        scene.add(nightLight);
+        // --- CANLI MATERYALLER ---
+        const matFloor = new THREE.MeshStandardMaterial({ color: 0x6ee7b7, roughness: 1 }); // Çimen
+        const matWood = new THREE.MeshStandardMaterial({ color: 0xfcb69f, roughness: 0.8 }); // Tatlı ahşap
+        const matWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+        const matPink = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.6 });
+        const matBlue = new THREE.MeshStandardMaterial({ color: 0x60a5fa, roughness: 0.6 });
+        const matGold = new THREE.MeshStandardMaterial({ color: 0xfcd34d, roughness: 0.3, metalness: 0.5 });
+        const matBlack = new THREE.MeshBasicMaterial({ color: 0x1e293b });
 
-        const matWood = new THREE.MeshStandardMaterial({ color: 0xc19a6b, roughness: 0.8 });
-        const matFloor = new THREE.MeshStandardMaterial({ color: 0xe6c280, roughness: 0.9 });
-        const matWall = new THREE.MeshStandardMaterial({ color: 0xfff0f5, roughness: 1.0 });
-        const matCeramic = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
-        const matFabric = new THREE.MeshStandardMaterial({ color: 0xfbcfe8, roughness: 1.0 });
-        const matBlueFabric = new THREE.MeshStandardMaterial({ color: 0xbae6fd, roughness: 1.0 });
-        const matWater = new THREE.MeshStandardMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7, roughness: 0.1 });
-        const matPlant = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.7 });
-        
-        const matUniWhite = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.6 });
-        const matUniPink = new THREE.MeshStandardMaterial({ color: 0xff99cc, roughness: 0.8 });
-        const matUniGold = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3, metalness: 0.8 });
-        const matBlack = new THREE.MeshBasicMaterial({ color: 0x222222 });
-
-        const floor = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), matFloor);
+        // --- ÇEVRE TASARIMI ---
+        const floor = new THREE.Mesh(new THREE.PlaneGeometry(80, 80), matFloor);
         floor.rotation.x = -Math.PI / 2;
         floor.receiveShadow = true;
         scene.add(floor);
 
-        const rug = new THREE.Mesh(new THREE.CylinderGeometry(8, 8, 0.1, 32), matFabric);
-        rug.position.set(0, 0.05, 0);
-        rug.receiveShadow = true;
-        scene.add(rug);
-
-        function createWall(w, h, d, x, y, z) {
-            const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), matWall);
-            wall.position.set(x, y, z);
-            wall.receiveShadow = true;
-            wall.castShadow = true;
-            scene.add(wall);
-            return wall;
-        }
-        createWall(50, 15, 1, 0, 7.5, -25);
-        createWall(1, 15, 50, -25, 7.5, 0);
-        createWall(1, 15, 50, 25, 7.5, 0);
-
-        const pot = new THREE.Mesh(new THREE.CylinderGeometry(1, 0.8, 2, 16), matCeramic);
-        pot.position.set(-20, 1, 20);
-        pot.castShadow = true;
-        const leaves = new THREE.Mesh(new THREE.SphereGeometry(2, 16, 16), matPlant);
-        leaves.position.set(-20, 3, 20);
-        leaves.castShadow = true;
-        scene.add(pot, leaves);
-
         const interactables = [];
 
-        // Yatak Odası
+        // 1. Yatak (Yuvarlak Hatlı)
         const bedGroup = new THREE.Group();
-        const bedBase = new THREE.Mesh(new THREE.BoxGeometry(7, 1.5, 9), matWood);
-        bedBase.position.y = 0.75; bedBase.castShadow = true; bedBase.receiveShadow = true;
-        const mattress = new THREE.Mesh(new THREE.BoxGeometry(6.5, 1, 8.5), matBlueFabric);
-        mattress.position.y = 2; mattress.castShadow = true; mattress.receiveShadow = true;
-        const pillow = new THREE.Mesh(new THREE.CapsuleGeometry(0.8, 2, 4, 16), matWall);
-        pillow.rotation.z = Math.PI/2; pillow.position.set(0, 2.8, -3); pillow.castShadow = true;
+        const bedBase = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 8, 4, 4, 4), matWood);
+        bedBase.position.y = 0.5; bedBase.castShadow = true; bedBase.receiveShadow = true;
+        const mattress = new THREE.Mesh(new THREE.BoxGeometry(5.5, 1, 7.5), matBlue);
+        mattress.position.y = 1.2; mattress.castShadow = true;
+        const pillow = new THREE.Mesh(new THREE.SphereGeometry(1.5, 16, 16), matWhite);
+        pillow.scale.set(1, 0.5, 0.5); pillow.position.set(0, 1.8, -2.5);
         bedGroup.add(bedBase, mattress, pillow);
-        bedGroup.position.set(-16, 0, -15);
+        bedGroup.position.set(-10, 0, -10);
         scene.add(bedGroup);
-        interactables.push({ mesh: bedGroup, action: {type: 'uyut', msg: "Mışıl mışıl uyuyor...", loli: 8}, label: "Uyu" });
+        interactables.push({ mesh: bedGroup, action: {type: 'uyut', msg: "Mışıl mışıl...", loli: 8}, label: "Uyu" });
 
-        const nightStand = new THREE.Mesh(new THREE.BoxGeometry(2, 2.5, 2), matWood);
-        nightStand.position.set(-10, 1.25, -18); nightStand.castShadow = true;
-        const lamp = new THREE.Mesh(new THREE.ConeGeometry(1, 1.5, 16), matFabric);
-        lamp.position.set(-10, 3.25, -18);
-        scene.add(nightStand, lamp);
-
-        // Banyo
-        const bathGroup = new THREE.Group();
-        const tubOuter = new THREE.Mesh(new THREE.CapsuleGeometry(2.5, 4, 16, 16), matCeramic);
-        tubOuter.rotation.z = Math.PI/2; tubOuter.position.y = 1.5; tubOuter.castShadow = true; tubOuter.receiveShadow = true;
-        const water = new THREE.Mesh(new THREE.PlaneGeometry(7, 4), matWater);
-        water.rotation.x = -Math.PI/2; water.position.y = 2.2;
-        bathGroup.add(tubOuter, water);
-        bathGroup.position.set(15, 0, -15);
-        scene.add(bathGroup);
-        interactables.push({ mesh: bathGroup, action: {type: 'yika', msg: "Köpüklü banyo! +5🍭", loli: 5}, label: "Yıkan" });
-
-        const toiletGroup = new THREE.Group();
-        const tBase = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.2, 1.5, 16), matCeramic);
-        tBase.position.y = 0.75; tBase.castShadow = true;
-        const tTank = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 1), matCeramic);
-        tTank.position.set(0, 2.5, -1); tTank.castShadow = true;
-        const tLid = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.1, 0.2, 16), matCeramic);
-        tLid.position.y = 1.6; tLid.castShadow = true;
-        toiletGroup.add(tBase, tTank, tLid);
-        toiletGroup.position.set(20, 0, -8);
-        scene.add(toiletGroup);
-        interactables.push({ mesh: toiletGroup, action: {type: 'tuvalet', msg: "Oh, rahatladı! +3🍭", loli: 3}, label: "Tuvalet" });
-
-        // Yemek Alanı
+        // 2. Yemek Masası (Büyük Çilekli)
         const diningGroup = new THREE.Group();
-        const tableTop = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 0.3, 32), matWood);
-        tableTop.position.y = 3; tableTop.castShadow = true; tableTop.receiveShadow = true;
-        const tableLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.6, 3, 16), matWood);
-        tableLeg.position.y = 1.5; tableLeg.castShadow = true;
-        const plate = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.1, 16), matCeramic);
-        plate.position.y = 3.2;
-        const berry = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), new THREE.MeshStandardMaterial({color: 0xef4444}));
-        berry.position.y = 3.5;
-        diningGroup.add(tableTop, tableLeg, plate, berry);
-        
-        for(let i=0; i<3; i++) {
-            const angle = (i * Math.PI * 2) / 3;
-            const chair = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 1.5, 16), matFabric);
-            chair.position.set(Math.cos(angle)*4, 0.75, Math.sin(angle)*4);
-            chair.castShadow = true;
-            diningGroup.add(chair);
-        }
-        diningGroup.position.set(12, 0, 15);
+        const table = new THREE.Mesh(new THREE.CylinderGeometry(3, 3, 1, 32), matWood);
+        table.position.y = 2; table.castShadow = true;
+        const base = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.5, 2, 16), matWood);
+        base.position.y = 1; base.castShadow = true;
+        const berry = new THREE.Mesh(new THREE.SphereGeometry(1, 16, 16), new THREE.MeshStandardMaterial({color: 0xf43f5e}));
+        berry.position.set(0, 3, 0); berry.castShadow = true;
+        // Çilek yaprağı
+        const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.5, 0.5, 4), matFloor);
+        leaf.position.set(0, 3.8, 0);
+        diningGroup.add(table, base, berry, leaf);
+        diningGroup.position.set(12, 0, 10);
         scene.add(diningGroup);
-        interactables.push({ mesh: diningGroup, action: {type: 'besle', msg: "Nefis Çilek! +5🍭", loli: 5}, label: "Yemek Ye" });
+        interactables.push({ mesh: diningGroup, action: {type: 'besle', msg: "Nefis Çilek! +5🍭", loli: 5}, label: "Yemek" });
 
-        function createSmoothUnicorn(scale = 1, isPlayer = false) {
+        // 3. Banyo Küveti (Yuvarlak)
+        const tubGroup = new THREE.Group();
+        const tub = new THREE.Mesh(new THREE.TorusGeometry(3, 1, 16, 32), matWhite);
+        tub.rotation.x = Math.PI / 2; tub.position.y = 1; tub.castShadow = true;
+        const water = new THREE.Mesh(new THREE.CylinderGeometry(2.8, 2.8, 0.5, 32), matBlue);
+        water.position.y = 0.8;
+        tubGroup.add(tub, water);
+        tubGroup.position.set(12, 0, -10);
+        scene.add(tubGroup);
+        interactables.push({ mesh: tubGroup, action: {type: 'yika', msg: "Köpüklü banyo! +5🍭", loli: 5}, label: "Yıkan" });
+
+        // --- MODERN CHIBI UNICORN TASARIMI ---
+        // Kafası büyük, gözleri iri, gövdesi tatlı bir 3D animasyon karakteri.
+        function createChibiUnicorn(scale = 1) {
             const group = new THREE.Group();
             
-            const body = new THREE.Mesh(new THREE.CapsuleGeometry(1.2, 1.5, 16, 16), matUniWhite);
-            body.rotation.x = Math.PI / 2; body.position.y = 2.5; body.castShadow = true;
-            group.add(body);
-
-            const head = new THREE.Mesh(new THREE.SphereGeometry(1.2, 32, 32), matUniWhite);
-            head.position.set(0, 4, 1.5); head.castShadow = true;
-            group.add(head);
-
-            const snout = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), matUniPink);
-            snout.position.set(0, 3.8, 2.5);
-            group.add(snout);
-
-            const eyeGeo = new THREE.SphereGeometry(0.15, 16, 16);
-            const eyeR = new THREE.Mesh(eyeGeo, matBlack); eyeR.position.set(0.6, 4.2, 2.4);
-            const eyeL = new THREE.Mesh(eyeGeo, matBlack); eyeL.position.set(-0.6, 4.2, 2.4);
-            group.add(eyeR, eyeL);
-
-            const horn = new THREE.Mesh(new THREE.ConeGeometry(0.2, 1.2, 16), matUniGold);
-            horn.position.set(0, 5.2, 1.8); horn.rotation.x = Math.PI / 8;
-            group.add(horn);
-
-            for(let i=0; i<4; i++) {
-                const maneNode = new THREE.Mesh(new THREE.SphereGeometry(0.4, 16, 16), matUniPink);
-                maneNode.position.set(0, 4.6 - i*0.4, 0.8 - i*0.2);
-                group.add(maneNode);
-            }
-
-            const tail = new THREE.Mesh(new THREE.CapsuleGeometry(0.3, 1, 16, 16), matUniPink);
-            tail.position.set(0, 2.5, -1.8); tail.rotation.x = -Math.PI / 4;
-            group.add(tail);
-
-            const legGeo = new THREE.CapsuleGeometry(0.3, 1.2, 16, 16);
-            const legs = [];
-            const legPositions = [[-0.6, 1.2, 1.0], [0.6, 1.2, 1.0], [-0.6, 1.2, -1.0], [0.6, 1.2, -1.0]];
+            // Animasyonlar için alt gruplar
+            const bodyGroup = new THREE.Group();
+            const headGroup = new THREE.Group();
             
-            legPositions.forEach(pos => {
-                const legGroup = new THREE.Group();
-                legGroup.position.set(pos[0], 2.0, pos[2]); 
-                const legMesh = new THREE.Mesh(legGeo, matUniWhite);
-                legMesh.position.y = -0.8; legMesh.castShadow = true;
-                const hoof = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 0.3, 16), matUniPink);
-                hoof.position.y = -1.6;
-                legGroup.add(legMesh, hoof);
-                group.add(legGroup);
-                legs.push(legGroup);
+            group.add(bodyGroup);
+            bodyGroup.add(headGroup);
+
+            // Gövde (Tombul Kapsül)
+            const body = new THREE.Mesh(new THREE.CapsuleGeometry(1.2, 1, 32, 32), matWhite);
+            body.rotation.x = Math.PI / 2; body.position.y = 1.8; body.castShadow = true;
+            bodyGroup.add(body);
+
+            // Kafa (Kocaman Küre)
+            headGroup.position.set(0, 3.5, 1.2);
+            const head = new THREE.Mesh(new THREE.SphereGeometry(1.6, 32, 32), matWhite);
+            head.castShadow = true;
+            headGroup.add(head);
+
+            // Gözler (Büyük ve Siyah)
+            const eyeGeo = new THREE.SphereGeometry(0.25, 16, 16);
+            const eyeR = new THREE.Mesh(eyeGeo, matBlack); eyeR.position.set(0.7, 0.2, 1.4);
+            const eyeL = new THREE.Mesh(eyeGeo, matBlack); eyeL.position.set(-0.7, 0.2, 1.4);
+            
+            // Göz Parıltısı (Anime tarzı beyaz nokta)
+            const glintGeo = new THREE.SphereGeometry(0.08, 8, 8);
+            const glintR = new THREE.Mesh(glintGeo, matWhite); glintR.position.set(0.75, 0.3, 1.6);
+            const glintL = new THREE.Mesh(glintGeo, matWhite); glintL.position.set(-0.65, 0.3, 1.6);
+            headGroup.add(eyeR, eyeL, glintR, glintL);
+
+            // Burun/Ağız (Pembe)
+            const snout = new THREE.Mesh(new THREE.SphereGeometry(0.8, 32, 32), matPink);
+            snout.scale.set(1, 0.7, 1); snout.position.set(0, -0.4, 1.5);
+            headGroup.add(snout);
+
+            // Boynuz (Kalın ve Tatlı)
+            const horn = new THREE.Mesh(new THREE.ConeGeometry(0.35, 1.5, 16), matGold);
+            horn.position.set(0, 1.8, 0.5); horn.rotation.x = Math.PI / 6;
+            headGroup.add(horn);
+
+            // Yele ve Kuyruk (Bulut gibi)
+            for(let i=0; i<3; i++) {
+                const mane = new THREE.Mesh(new THREE.SphereGeometry(0.5, 16, 16), matPink);
+                mane.position.set(0, 1.2 - i*0.5, -1 - i*0.3);
+                headGroup.add(mane);
+            }
+            const tail = new THREE.Mesh(new THREE.SphereGeometry(0.6, 16, 16), matPink);
+            tail.position.set(0, 1.5, -1.8);
+            bodyGroup.add(tail);
+
+            // Bacaklar (Kısa ve Tombul)
+            const legGeo = new THREE.CapsuleGeometry(0.4, 0.6, 16, 16);
+            const legs = [];
+            const legPos = [[-0.6, 1.0, 1.0], [0.6, 1.0, 1.0], [-0.6, 1.0, -1.0], [0.6, 1.0, -1.0]];
+            legPos.forEach(pos => {
+                const legWrap = new THREE.Group();
+                legWrap.position.set(pos[0], pos[1], pos[2]);
+                const leg = new THREE.Mesh(legGeo, matWhite);
+                leg.position.y = -0.5; leg.castShadow = true;
+                legWrap.add(leg);
+                group.add(legWrap);
+                legs.push(legWrap);
             });
 
+            // Aksesuar Noktası (Kafanın üstü)
             const accessoryGroup = new THREE.Group();
-            accessoryGroup.position.set(0, 4.8, 1.5);
-            group.add(accessoryGroup);
+            accessoryGroup.position.set(0, 1.6, 0.5);
+            headGroup.add(accessoryGroup);
 
             group.scale.set(scale, scale, scale);
-            return { mesh: group, legs: legs, accessory: accessoryGroup, head: head };
+            return { mesh: group, body: bodyGroup, head: headGroup, legs: legs, accessory: accessoryGroup };
         }
 
-        const playerObj = createSmoothUnicorn(1, true);
+        const playerObj = createChibiUnicorn(1);
         const player = playerObj.mesh;
-        player.position.set(0, 0, 5);
+        player.position.set(0, 0, 0);
         scene.add(player);
-        
-        const cameraTarget = new THREE.Object3D();
-        player.add(cameraTarget);
-        cameraTarget.position.set(0, 10, -16); // Kamera biraz daha geride
 
+        // Kardeşler
         const siblings = [];
         for(let i=0; i<2; i++) {
-            const sib = createSmoothUnicorn(0.65);
-            sib.mesh.position.set((Math.random()-0.5)*20, 0, (Math.random()-0.5)*20);
+            const sib = createChibiUnicorn(0.6);
+            sib.mesh.position.set((Math.random()-0.5)*15, 0, (Math.random()-0.5)*15);
             scene.add(sib.mesh);
             siblings.push({ obj: sib, offset: Math.random() * 100, moving: false });
         }
+        
+        // --- KAMERA TAKİBİ ---
+        const cameraTarget = new THREE.Vector3();
 
-        const keys = { w: false, a: false, s: false, d: false };
-        window.addEventListener('keydown', e => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = true; });
-        window.addEventListener('keyup', e => { if(keys.hasOwnProperty(e.key.toLowerCase())) keys[e.key.toLowerCase()] = false; });
-
+        // --- JOYSTICK KONTROLLERİ ---
         const joystickZone = document.getElementById('joystick-zone');
         const joystickKnob = document.getElementById('joystick-knob');
         let joyData = { x: 0, y: 0, active: false };
         let joyCenter = { x: 0, y: 0 };
-        const maxJoyRadius = 50;
+        const maxJoyRadius = 40;
 
         function handleJoyStart(e) {
             if(e.target.id === 'action-btn') return;
@@ -346,23 +306,22 @@
             const touch = e.type.includes('touch') ? e.touches[0] : e;
             let dx = touch.clientX - joyCenter.x;
             let dy = touch.clientY - joyCenter.y;
-            const distance = Math.hypot(dx, dy);
+            const dist = Math.hypot(dx, dy);
             
-            if (distance > maxJoyRadius) {
-                dx = (dx / distance) * maxJoyRadius;
-                dy = (dy / distance) * maxJoyRadius;
+            if (dist > maxJoyRadius) {
+                dx = (dx / dist) * maxJoyRadius;
+                dy = (dy / dist) * maxJoyRadius;
             }
             
-            joystickKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
             joyData.x = dx / maxJoyRadius;
             joyData.y = dy / maxJoyRadius;
         }
 
-        function handleJoyEnd(e) {
-            if(e.type !== 'mouseup' && e.type !== 'touchend') return;
+        function handleJoyEnd() {
             joyData.active = false;
             joyData.x = 0; joyData.y = 0;
-            joystickKnob.style.transform = `translate(-50%, -50%)`;
+            joystickKnob.style.transform = `translate(0, 0)`;
         }
 
         joystickZone.addEventListener('touchstart', handleJoyStart, {passive: false});
@@ -372,18 +331,21 @@
         window.addEventListener('mousemove', handleJoyMove);
         window.addEventListener('mouseup', handleJoyEnd);
 
+        // --- ARAYÜZ VE AKSİYONLAR ---
         function showMessage(msg) {
             const box = document.getElementById('msg-box');
             box.innerText = msg;
             box.style.opacity = '1';
-            box.style.transform = 'scale(1.1)';
-            setTimeout(()=> box.style.transform = 'scale(1)', 200);
+            box.style.transform = 'translateX(0)';
             clearTimeout(showMsgTimeout);
-            showMsgTimeout = setTimeout(() => box.style.opacity = '0', 3000);
+            showMsgTimeout = setTimeout(() => {
+                box.style.opacity = '0';
+                box.style.transform = 'translateX(20px)';
+            }, 3000);
         }
 
         function updateBars() {
-            const getColor = (v) => v > 60 ? "#4ade80" : (v > 30 ? "#facc15" : "#f87171");
+            const getColor = (v) => v > 60 ? "#34d399" : (v > 30 ? "#fbbf24" : "#f87171");
             ['tokluk', 'tuvalet', 'enerji', 'eglence', 'temizlik'].forEach(key => {
                 const bar = document.getElementById(`bar-${key}`);
                 bar.style.width = `${stats[key]}%`;
@@ -397,27 +359,20 @@
             const m = document.getElementById('dress-menu');
             m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
         }
-        
+
         window.equipHat = (type) => {
             const group = playerObj.accessory;
             while(group.children.length > 0) group.remove(group.children[0]);
             
             if(type === 'crown') {
-                const crown = new THREE.Mesh(new THREE.ConeGeometry(0.6, 0.8, 16), matUniGold);
-                crown.position.y = 0.4; group.add(crown);
+                const crown = new THREE.Mesh(new THREE.ConeGeometry(0.8, 1, 16), matGold);
+                crown.position.y = 0.5; group.add(crown);
                 lollipops += 2; showMessage("Kraliyet tarzı! +2🍭");
             } else if(type === 'glasses') {
                 const gGroup = new THREE.Group();
-                const frame = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.4, 0.1), matBlack);
-                frame.position.z = 1.1; frame.position.y = -0.4; gGroup.add(frame); group.add(gGroup);
+                const frame = new THREE.Mesh(new THREE.BoxGeometry(2, 0.6, 0.2), matBlack);
+                frame.position.z = 1.6; frame.position.y = -0.5; gGroup.add(frame); group.add(gGroup);
                 lollipops += 2; showMessage("Çok havalı! +2🍭");
-            } else if(type === 'bow') {
-                const bowGeo = new THREE.TorusGeometry(0.4, 0.15, 8, 16);
-                const b1 = new THREE.Mesh(bowGeo, matUniPink); b1.position.set(-0.4, 0, 0);
-                const b2 = new THREE.Mesh(bowGeo, matUniPink); b2.position.set(0.4, 0, 0);
-                const center = new THREE.Mesh(new THREE.SphereGeometry(0.25), matUniWhite);
-                group.add(b1, b2, center);
-                lollipops += 2; showMessage("Çok tatlı oldu! +2🍭");
             }
             updateBars();
             window.toggleDressMenu();
@@ -425,7 +380,7 @@
 
         window.playWithSiblings = () => {
             if(isSleeping) { showMessage("Şşşt, herkes uyuyor!"); return; }
-            if(stats.enerji < 20) { showMessage("Oynamak için çok yorgun."); return; }
+            if(stats.enerji < 20) { showMessage("Oynamak için yorgun."); return; }
             
             stats.eglence = Math.min(100, stats.eglence + 40);
             stats.enerji = Math.max(0, stats.enerji - 25);
@@ -434,16 +389,8 @@
             showMessage("Kardeşleriyle oynadı! +10🍭");
             updateBars();
             
-            let jumpInt = setInterval(() => {
-                player.position.y += 0.5;
-                if(player.position.y > 4) {
-                    clearInterval(jumpInt);
-                    let fallInt = setInterval(() => {
-                        player.position.y -= 0.5;
-                        if(player.position.y <= 0) { player.position.y = 0; clearInterval(fallInt); }
-                    }, 30);
-                }
-            }, 30);
+            // Animasyon: Zıplama
+            player.position.y = 3;
         }
 
         window.performInteraction = () => {
@@ -454,48 +401,40 @@
                 isSleeping = !isSleeping;
                 const filter = document.getElementById('night-filter');
                 if(isSleeping) {
-                    filter.style.opacity = '1';
+                    filter.style.opacity = '0.7';
+                    ambientLight.intensity = 0.2;
                     dirLight.intensity = 0.1;
-                    hemiLight.intensity = 0.2;
-                    nightLight.intensity = 1.5;
                     
                     stats.enerji = 100;
                     lollipops += act.loli;
                     showMessage("İyi geceler... +" + act.loli + "🍭");
                     document.getElementById('action-btn').innerText = "Uyan";
                     
-                    player.position.set(-16, 3, -15);
+                    // Yatağa Işınla
+                    player.position.set(-10, 2, -10);
                     player.rotation.set(0, Math.PI/2, Math.PI/2); 
                 } else {
                     filter.style.opacity = '0';
-                    dirLight.intensity = 1.2;
-                    hemiLight.intensity = 0.6;
-                    nightLight.intensity = 0;
+                    ambientLight.intensity = 0.7;
+                    dirLight.intensity = 0.8;
                     
                     showMessage("Günaydın!");
                     document.getElementById('action-btn').innerText = "Uyu";
                     
                     player.rotation.set(0, 0, 0);
-                    player.position.set(-10, 0, -10);
+                    player.position.set(-5, 0, -5);
                 }
             } else {
                 if(isSleeping) { showMessage("Önce uyanmalısın!"); return; }
                 
-                player.position.y = 1.5;
-                setTimeout(()=> player.position.y = 0, 200);
+                player.position.y = 2; // Zıpla
 
                 if(act.type === 'besle') {
-                    if(stats.tokluk >= 100) { showMessage("Karnı zaten tok."); return; }
+                    if(stats.tokluk >= 100) { showMessage("Karnı tok."); return; }
                     stats.tokluk = Math.min(100, stats.tokluk + 40);
                     stats.tuvalet = Math.max(0, stats.tuvalet - 20);
                 }
-                else if(act.type === 'tuvalet') {
-                    stats.tuvalet = 100;
-                    stats.temizlik = Math.max(0, stats.temizlik - 10);
-                }
-                else if(act.type === 'yika') {
-                    stats.temizlik = 100;
-                }
+                else if(act.type === 'yika') { stats.temizlik = 100; }
                 
                 lollipops += act.loli;
                 showMessage(act.msg);
@@ -503,19 +442,19 @@
             updateBars();
         }
 
+        // Zamanla Azalma
         setInterval(() => {
             if(isSleeping) return;
-            stats.tokluk = Math.max(0, stats.tokluk - 1.5);
+            stats.tokluk = Math.max(0, stats.tokluk - 2);
             stats.tuvalet = Math.max(0, stats.tuvalet - 1);
-            stats.enerji = Math.max(0, stats.enerji - 1);
-            stats.eglence = Math.max(0, stats.eglence - 1.5);
+            stats.enerji = Math.max(0, stats.enerji - 1.5);
+            stats.eglence = Math.max(0, stats.eglence - 2);
             stats.temizlik = Math.max(0, stats.temizlik - 0.5);
             updateBars();
-            
-            if(stats.tokluk < 20) showMessage("Çok acıktım! 🍓");
-            else if(stats.enerji < 20) showMessage("Uykum geldi... 🛏️");
-        }, 5000);
+        }, 4000);
 
+        // --- AKICI RENDER DÖNGÜSÜ ---
+        // (Eski koddaki event listener hatası buradan tamamen temizlendi)
         const clock = new THREE.Clock();
 
         function animate() {
@@ -524,58 +463,66 @@
             const time = clock.getElapsedTime();
 
             if (!isSleeping) {
-                const moveSpeed = 15 * delta;
+                const moveSpeed = 12 * delta;
                 let isMoving = false;
-
                 let inputX = joyData.x;
                 let inputY = joyData.y;
-                if (keys.w) inputY = -1;
-                if (keys.s) inputY = 1;
-                if (keys.a) inputX = -1;
-                if (keys.d) inputX = 1;
 
                 if (Math.abs(inputY) > 0.1 || Math.abs(inputX) > 0.1) {
                     isMoving = true;
+                    // Yumuşak dönüş (Slerp benzeri)
                     const targetAngle = Math.atan2(inputX, inputY);
                     let diff = targetAngle - player.rotation.y;
                     diff = Math.atan2(Math.sin(diff), Math.cos(diff));
-                    player.rotation.y += diff * 15 * delta;
+                    player.rotation.y += diff * 10 * delta;
 
-                    player.position.x += inputX * moveSpeed * 50;
-                    player.position.z += inputY * moveSpeed * 50;
+                    // İleri gidiş
+                    player.position.x += inputX * moveSpeed * 30;
+                    player.position.z += inputY * moveSpeed * 30;
 
-                    player.position.x = Math.max(-22, Math.min(22, player.position.x));
-                    player.position.z = Math.max(-22, Math.min(22, player.position.z));
+                    // Duvar sınırları
+                    player.position.x = Math.max(-25, Math.min(25, player.position.x));
+                    player.position.z = Math.max(-25, Math.min(25, player.position.z));
                 }
 
+                // Modern Chibi Animasyonları
                 if (isMoving) {
-                    const legSwing = Math.sin(time * 20) * 0.6;
-                    playerObj.legs[0].rotation.x = legSwing;
-                    playerObj.legs[3].rotation.x = legSwing;
-                    playerObj.legs[1].rotation.x = -legSwing;
-                    playerObj.legs[2].rotation.x = -legSwing;
+                    // Paytak Yürüyüş
+                    const walkCycle = time * 20;
+                    playerObj.legs[0].rotation.x = Math.sin(walkCycle) * 0.8;
+                    playerObj.legs[3].rotation.x = Math.sin(walkCycle) * 0.8;
+                    playerObj.legs[1].rotation.x = -Math.sin(walkCycle) * 0.8;
+                    playerObj.legs[2].rotation.x = -Math.sin(walkCycle) * 0.8;
                     
-                    player.position.y = Math.abs(Math.sin(time * 20)) * 0.3;
-                    playerObj.head.rotation.x = Math.sin(time * 10) * 0.1;
+                    // Gövde Zıplaması
+                    playerObj.body.position.y = Math.abs(Math.sin(walkCycle)) * 0.3;
+                    // Kafa Sallanması
+                    playerObj.head.rotation.z = Math.sin(walkCycle * 0.5) * 0.1;
                 } else {
+                    // Dururken tatlı tatlı Nefes Alma animasyonu
                     playerObj.legs.forEach(leg => leg.rotation.x = 0);
-                    playerObj.head.rotation.x = 0;
-                    if(player.position.y < 0.1) player.position.y = 0;
+                    playerObj.body.position.y = Math.sin(time * 3) * 0.1; 
+                    playerObj.head.rotation.z = 0;
+                }
+                
+                // Yerçekimi (Zıpladıysa yere yavaşça in)
+                if(player.position.y > 0) {
+                    player.position.y -= 10 * delta;
+                    if(player.position.y < 0) player.position.y = 0;
                 }
             }
 
+            // Etkileşim Kontrolü
             let foundInteractable = null;
             if (!isSleeping) {
                 for (let i = 0; i < interactables.length; i++) {
-                    const item = interactables[i];
-                    const dist = player.position.distanceTo(item.mesh.position);
-                    if (dist < 6.5) {
-                        foundInteractable = item;
+                    if (player.position.distanceTo(interactables[i].mesh.position) < 8) {
+                        foundInteractable = interactables[i];
                         break;
                     }
                 }
             } else {
-                foundInteractable = interactables[0];
+                foundInteractable = interactables[0]; // Uyurken sadece yatak
             }
 
             const btn = document.getElementById('action-btn');
@@ -590,39 +537,34 @@
                 btn.style.display = 'none';
             }
 
+            // Kardeş Zıplamaları
             siblings.forEach(sib => {
                 const sObj = sib.obj.mesh;
                 if(!isSleeping) {
-                    if(Math.random() < 0.02) sib.moving = !sib.moving;
+                    if(Math.random() < 0.01) sib.moving = !sib.moving;
                     if(sib.moving) {
                         sObj.rotation.y += Math.sin(time + sib.offset) * 0.05;
                         sObj.position.x += Math.sin(sObj.rotation.y) * 4 * delta;
                         sObj.position.z += Math.cos(sObj.rotation.y) * 4 * delta;
-                        
-                        sObj.position.y = Math.abs(Math.sin(time * 15 + sib.offset)) * 0.8;
-                        
                         sObj.position.x = Math.max(-20, Math.min(20, sObj.position.x));
                         sObj.position.z = Math.max(-20, Math.min(20, sObj.position.z));
+                        
+                        sib.obj.legs.forEach(l => l.rotation.x = Math.sin(time*15) * 0.5);
                     } else {
-                        sObj.position.y = 0;
+                        sib.obj.legs.forEach(l => l.rotation.x = 0);
                     }
+                    // Minik zıplama
+                    sObj.position.y = Math.abs(Math.sin(time * 10 + sib.offset)) * 0.5;
                 } else {
                     sObj.position.y = 0.5;
                     sObj.rotation.x = Math.PI / 2;
                 }
             });
 
-            // Akıcı Kamera Takibi
-            window.addEventListener('load', () => {
-                const idealPos = new THREE.Vector3().copy(cameraTarget.position);
-                idealPos.applyMatrix4(player.matrixWorld);
-                camera.position.lerp(idealPos, 0.1);
-                camera.lookAt(player.position.x, player.position.y + 3, player.position.z);
-            });
-            const idealPos = new THREE.Vector3().copy(cameraTarget.position);
-            idealPos.applyMatrix4(player.matrixWorld);
-            camera.position.lerp(idealPos, 0.1);
-            camera.lookAt(player.position.x, player.position.y + 3, player.position.z);
+            // Modern Yumuşak Kamera Takibi (Gecikmeli takip)
+            cameraTarget.set(player.position.x, player.position.y + 12, player.position.z + 18);
+            camera.position.lerp(cameraTarget, 0.08); // Akıcı geçiş
+            camera.lookAt(player.position.x, player.position.y + 2, player.position.z);
 
             renderer.render(scene, camera);
         }
@@ -633,11 +575,10 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // Oyunu hemen başlat ve ilk bar dolumunu yap
-        window.onload = () => {
-            updateBars();
-            animate();
-        };
+        // Başlat
+        updateBars();
+        setTimeout(() => showMessage("Oyuna başla!"), 500);
+        animate();
 
     </script>
 </body>
